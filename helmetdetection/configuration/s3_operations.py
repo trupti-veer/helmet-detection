@@ -22,11 +22,11 @@ class S3Operation:
         # self.s3_resource = boto3.resource("s3")
         if S3Operation.s3_resource==None or S3Operation.s3_client==None:
             __access_key_id = os.getenv(AWS_ACCESS_KEY_ID, )
-            __secret_access_key = os.getenv(AWS_SECRET_KEY_ID, )
+            __secret_access_key = os.getenv(AWS_SECRET_ACCESS_KEY, )
             if __access_key_id is None:
                 raise Exception(f"Environment variable: {AWS_ACCESS_KEY_ID} is not set.")
             if __secret_access_key is None:
-                raise Exception(f"Environment variable: {AWS_SECRET_KEY_ID} is not set.")
+                raise Exception(f"Environment variable: {AWS_SECRET_ACCESS_KEY} is not set.")
         
             S3Operation.s3_resource = boto3.resource('s3',
                                             aws_access_key_id=__access_key_id,
