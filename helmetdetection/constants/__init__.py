@@ -34,6 +34,23 @@ DATA_TRANSFORMATION_TEST_FILE_NAME = "test.pkl"
 DATA_TRANSFORMATION_TRAIN_SPLIT = 'train'
 DATA_TRANSFORMATION_TEST_SPLIT = 'test'
 
+# Model Training Constants 
+TRAINED_MODEL_DIR = 'TrainedModel'
+TRAINED_MODEL_NAME = 'model.pt'
+TRAINED_BATCH_SIZE = 2
+TRAINED_SHUFFLE = False
+TRAINED_NUM_WORKERS = 1
+EPOCH = 1
+
+#Commom constants
+use_cuda = torch.cuda.is_available()
+DEVICE = torch.device("cuda" if use_cuda else "cpu")
+
+# Model evaluation constants
+MODEL_EVALUATION_ARTIFACTS_DIR = 'ModelEvaluationArtifacts'
+MODEL_EVALUATION_FILE_NAME = 'loss.csv'
+
+
 # AWS CONSTANTS
 AWS_ACCESS_KEY_ID = "AWS_ACCESS_KEY_ID"
 AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY"

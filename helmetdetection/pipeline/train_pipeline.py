@@ -1,9 +1,11 @@
 import sys
 from helmetdetection.datacomponents.data_ingestion import DataIngestion
 from helmetdetection.datacomponents.data_transformation import DataTransformation
+from helmetdetection.datacomponents.model_trainer import ModelTrainer
+from helmetdetection.datacomponents.model_evaluation import ModelEvaluation
 from helmetdetection.configuration.s3_operations import S3Operation
-from helmetdetection.entity.config_entity import DataIngestionConfig, DataTransformationConfig
-from helmetdetection.entity.artifacts_entity import DataIngestionArtifacts, DataTransformationArtifacts
+from helmetdetection.entity.config_entity import DataIngestionConfig, DataTransformationConfig, ModelTrainerConfig, ModelEvaluationConfig
+from helmetdetection.entity.artifacts_entity import DataIngestionArtifacts, DataTransformationArtifacts, ModelTrainerArtifacts, ModelEvaluationArtifacts
 from helmetdetection.logger import logging
 from helmetdetection.exception import HDException
 
@@ -12,6 +14,8 @@ class TrainPipeline:
     def __init__(self):
         self.data_ingestion_config = DataIngestionConfig()
         self.data_transformation_config = DataTransformationConfig()
+        self.model_trainer_config = ModelTrainerConfig()
+        self.model_evaluation_config = ModelEvaluationConfig()
         self.s3_operations = S3Operation()
 
     def start_data_ingestion(self) -> DataIngestionArtifacts:          
@@ -48,7 +52,35 @@ class TrainPipeline:
 
         except Exception as e:
             raise HDException(e, sys) from e
+        
+    def start_model_training(self, data_transformation_artifact: DataTransformationArtifacts,) -> ModelTrainerArtifacts:
+        logging.info(
+            "Entered the start_model_training method of TrainPipeline class"
+        )
+        try:
+            model_trainer = ModelTrainer(data_transformation_artifacts=data_transformation_artifact,
+                                        model_trainer_config=self.model_trainer_config
+                                        )
+            model_trainer_artifact = model_trainer.initiate_model_trainer()
+            logging.info("Exited the start_model_trainer method of TrainPipeline class")
+            return model_trainer_artifact
+        except Exception as e:
+            raise HDException(e, sys) from e
 
+        
+    def start_model_evaluation(self, model_trainer_artifact: ModelTrainerArtifacts, data_transformation_artifact: DataTransformationArtifacts) -> ModelEvaluationArtifacts:
+        logging.info("Entered the start_model_evaluation method of TrainPipeline class")
+        try:
+            model_evaluation = ModelEvaluation(data_transformation_artifacts = data_transformation_artifact,
+                                                model_evaluation_config=self.model_evaluation_config,
+                                                model_trainer_artifacts=model_trainer_artifact)
+
+            model_evaluation_artifact = model_evaluation.initiate_model_evaluation()
+            logging.info("Exited the start_model_evaluation method of TrainPipeline class")
+            return model_evaluation_artifact
+
+        except Exception as e:
+            raise HDException(e, sys) from e
         
     def run_pipeline(self) -> None:
         logging.info("Entered the run_pipeline method of TrainPipeline class")
@@ -57,6 +89,13 @@ class TrainPipeline:
             data_transformation_artifact = self.start_data_transformation(
                 data_ingestion_artifact=data_ingestion_artifact
             )
+            model_training_artifact = self.start_model_training(data_transformation_artifact)
+            model_evaluation_artifact = self.start_model_evaluation(
+                model_trainer_artifact=model_training_artifact, 
+                data_transformation_artifact=data_transformation_artifact
+            )
+            logging.info(f"Model training artifacts {model_training_artifact}")
+            logging.info(f"Model model_evaluation_artifact artifacts {model_evaluation_artifact}")
             logging.info("Run pipeline method complete")
         except Exception as e:
             raise HDException(e, sys) from e
