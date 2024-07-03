@@ -52,7 +52,7 @@ class ModelEvaluationConfig:
         self.EVALUATED_LOSS_CSV_PATH = os.path.join(self.EVALUATED_MODEL_DIR, MODEL_EVALUATION_FILE_NAME)
         self.BEST_MODEL_PATH = os.path.join(self.EVALUATED_MODEL_DIR, TRAINED_MODEL_NAME )
         self.DEVICE = DEVICE
-        self.BATCH: int = 1
+        self.BATCH: int = 2
         self.SHUFFLE: bool = TRAINED_SHUFFLE
         self.NUM_WORKERS = TRAINED_NUM_WORKERS
 

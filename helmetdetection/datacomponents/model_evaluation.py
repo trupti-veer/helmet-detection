@@ -61,7 +61,7 @@ class ModelEvaluation:
             all_losses = []
             all_losses_dict = []
 
-            for images, targets in tqdm(dataloader):
+            for images, targets in dataloader:
                 images = list(image.to(device) for image in images)
                 targets = [{k: torch.tensor(v).to(device) for k, v in t.items()} for t in targets]
 
@@ -118,33 +118,33 @@ class ModelEvaluation:
             logging.info("loaded saved model")
 
             trained_model = trained_model.to(DEVICE)
+            if __name__ == '__main__':
+                all_losses_dict, all_losses = self.evaluate(trained_model, test_loader, device=DEVICE)
+                os.makedirs(self.model_evaluation_config.EVALUATED_MODEL_DIR, exist_ok=True)
+                all_losses_dict.to_csv(self.model_evaluation_config.EVALUATED_LOSS_CSV_PATH, index=False)
 
-            all_losses_dict, all_losses = self.evaluate(trained_model, test_loader, device=DEVICE)
-            os.makedirs(self.model_evaluation_config.EVALUATED_MODEL_DIR, exist_ok=True)
-            all_losses_dict.to_csv(self.model_evaluation_config.EVALUATED_LOSS_CSV_PATH, index=False)
+                s3_model = self.get_model_from_s3()
+                s3_model = torch.load(s3_model, map_location=torch.device(DEVICE))
 
-            s3_model = self.get_model_from_s3()
-            s3_model = torch.load(s3_model, map_location=torch.device(DEVICE))
+                s3_all_losses_dict, s3_all_losses = self.evaluate(s3_model,test_loader, device=DEVICE)
 
-            s3_all_losses_dict, s3_all_losses = self.evaluate(s3_model,test_loader, device=DEVICE)
+                if s3_all_losses > all_losses:
+                    # 0.03 > 0.02
+                    is_model_accepted = True
 
-            if s3_all_losses > all_losses:
-                # 0.03 > 0.02
-                is_model_accepted = True
+                    model_evaluation_artifact = ModelEvaluationArtifacts(
+                        is_model_accepted=is_model_accepted,
+                        all_losses=all_losses)
 
-                model_evaluation_artifact = ModelEvaluationArtifacts(
-                    is_model_accepted=is_model_accepted,
-                    all_losses=all_losses)
+                else:
+                    is_model_accepted = False
 
-            else:
-                is_model_accepted = False
+                    model_evaluation_artifact = ModelEvaluationArtifacts(
+                        is_model_accepted=is_model_accepted,
+                        all_losses=s3_all_losses)
 
-                model_evaluation_artifact = ModelEvaluationArtifacts(
-                    is_model_accepted=is_model_accepted,
-                    all_losses=s3_all_losses)
-
-            logging.info("Exited the initiate_model_evaluation method of Model Evaluation class")
-            return model_evaluation_artifact
+                logging.info("Exited the initiate_model_evaluation method of Model Evaluation class")
+                return model_evaluation_artifact
 
         except Exception as e:
             raise HDException(e, sys) from e

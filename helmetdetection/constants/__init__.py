@@ -40,7 +40,7 @@ TRAINED_MODEL_NAME = 'model.pt'
 TRAINED_BATCH_SIZE = 2
 TRAINED_SHUFFLE = False
 TRAINED_NUM_WORKERS = 1
-EPOCH = 1
+EPOCH = 10
 
 #Commom constants
 use_cuda = torch.cuda.is_available()
@@ -49,6 +49,12 @@ DEVICE = torch.device("cuda" if use_cuda else "cpu")
 # Model evaluation constants
 MODEL_EVALUATION_ARTIFACTS_DIR = 'ModelEvaluationArtifacts'
 MODEL_EVALUATION_FILE_NAME = 'loss.csv'
+
+APP_HOST = "127.0.0.1"
+APP_PORT = 8080
+
+# Prediction Constants
+PREDICTION_CLASSES = ['With Helmet', 'Without Helmet']
 
 
 # AWS CONSTANTS

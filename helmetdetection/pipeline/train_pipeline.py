@@ -3,9 +3,10 @@ from helmetdetection.datacomponents.data_ingestion import DataIngestion
 from helmetdetection.datacomponents.data_transformation import DataTransformation
 from helmetdetection.datacomponents.model_trainer import ModelTrainer
 from helmetdetection.datacomponents.model_evaluation import ModelEvaluation
+from helmetdetection.datacomponents.model_pusher import ModelPusher
 from helmetdetection.configuration.s3_operations import S3Operation
-from helmetdetection.entity.config_entity import DataIngestionConfig, DataTransformationConfig, ModelTrainerConfig, ModelEvaluationConfig
-from helmetdetection.entity.artifacts_entity import DataIngestionArtifacts, DataTransformationArtifacts, ModelTrainerArtifacts, ModelEvaluationArtifacts
+from helmetdetection.entity.config_entity import DataIngestionConfig, DataTransformationConfig, ModelTrainerConfig, ModelEvaluationConfig, ModelPusherConfig
+from helmetdetection.entity.artifacts_entity import DataIngestionArtifacts, DataTransformationArtifacts, ModelTrainerArtifacts, ModelEvaluationArtifacts, ModelPusherArtifacts
 from helmetdetection.logger import logging
 from helmetdetection.exception import HDException
 
@@ -16,6 +17,7 @@ class TrainPipeline:
         self.data_transformation_config = DataTransformationConfig()
         self.model_trainer_config = ModelTrainerConfig()
         self.model_evaluation_config = ModelEvaluationConfig()
+        self.model_pusher_config = ModelPusherConfig()
         self.s3_operations = S3Operation()
 
     def start_data_ingestion(self) -> DataIngestionArtifacts:          
@@ -82,6 +84,21 @@ class TrainPipeline:
         except Exception as e:
             raise HDException(e, sys) from e
         
+    def start_model_pusher(self, s3: S3Operation):
+        logging.info("Entered the start_model_pusher method of TrainPipeline class")
+        try:
+            model_pusher = ModelPusher(
+                model_pusher_config=self.model_pusher_config,
+                s3=s3
+            )
+
+            model_pusher_artifact = model_pusher.initiate_model_pusher()
+            logging.info("Exited the start_model_pusher method of TrainPipeline class")
+            return model_pusher_artifact
+
+        except Exception as e:
+            raise HDException(e, sys) from e
+        
     def run_pipeline(self) -> None:
         logging.info("Entered the run_pipeline method of TrainPipeline class")
         try:
@@ -90,12 +107,16 @@ class TrainPipeline:
                 data_ingestion_artifact=data_ingestion_artifact
             )
             model_training_artifact = self.start_model_training(data_transformation_artifact)
+            logging.info(f"Model training artifacts {model_training_artifact}")       
             model_evaluation_artifact = self.start_model_evaluation(
-                model_trainer_artifact=model_training_artifact, 
+                model_trainer_artifact=model_training_artifact,
                 data_transformation_artifact=data_transformation_artifact
             )
-            logging.info(f"Model training artifacts {model_training_artifact}")
             logging.info(f"Model model_evaluation_artifact artifacts {model_evaluation_artifact}")
-            logging.info("Run pipeline method complete")
+            #if not model_evaluation_artifact.is_model_accepted:
+             #   raise Exception("Trained model is not better than the best model")
+            model_pusher_artifact = self.start_model_pusher(self.s3_operations)
+            logging.info(f"Model model_pusher_artifact artifacts {model_pusher_artifact}")
+            logging.info("Run pipeline method complete")     
         except Exception as e:
             raise HDException(e, sys) from e

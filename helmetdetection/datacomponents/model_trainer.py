@@ -32,8 +32,8 @@ class ModelTrainer:
             model.train() 
             all_losses = []
             all_losses_dict = []
-            
-            for images, targets in loader:
+  
+            for images, targets in tqdm(loader):
                 images = list(image.to(device) for image in images)
                 targets = [{k: torch.tensor(v).to(device) for k, v in t.items()} for t in targets]
                 
@@ -53,6 +53,7 @@ class ModelTrainer:
                 optimizer.zero_grad()
                 losses.backward()
                 optimizer.step()
+                
             all_losses_dict = pd.DataFrame(all_losses_dict)  # for printing
 
             print("Epoch {}, lr: {:.6f}, loss: {:.6f}, loss_classifier: {:.6f}, loss_box: {:.6f}, loss_rpn_box: {:.6f}, loss_object: {:.6f}".format(
@@ -122,9 +123,9 @@ class ModelTrainer:
             logging.info("loaded optimiser")
 
             for epoch in range(self.model_trainer_config.EPOCH): 
-                if __name__ == '__main__':               
+                if __name__ == '__main__':
                     self.train(model, optimiser, train_loader, self.model_trainer_config.DEVICE, epoch)
-
+               
             os.makedirs(self.model_trainer_config.TRAINED_MODEL_DIR, exist_ok=True)
             torch.save(model, self.model_trainer_config.TRAINED_MODEL_PATH)
 
