@@ -51,7 +51,7 @@ class PredictionPipeline:
         except Exception as e:
             raise HDException(e, sys) from e
 
-    def prediction(self, best_model_path: str, image_tensor, image_int_tensor) -> float:
+    def prediction(self, best_model_path: str, image_tensor, image_int_tensor) -> bytes:
         logging.info("Entered the prediction method of PredictionPipeline class")
         try:
             model = torch.load(best_model_path, map_location=torch.device(DEVICE))
@@ -59,7 +59,7 @@ class PredictionPipeline:
             with torch.no_grad():
                 prediction = model([image_tensor.to(DEVICE)])
                 pred = prediction[0]
-
+            logging.info(f"prediction array is {prediction}")
             logging.info(f"Bounding box preds are {pred}")
 
             img = draw_bounding_boxes(image_int_tensor,
@@ -67,14 +67,16 @@ class PredictionPipeline:
                                 [PREDICTION_CLASSES[i] for i in pred['labels'][pred['scores'] > 0.8].tolist()],
                                 width=4).permute(0, 2, 1)
             logging.info(f"Bounding box bbox_tensor are {img}")           
-            img = transforms.ToPILImage() (img)
-            img.show()
+            img = transforms.ToPILImage() (img)                                                
+            img_buffer = img.transpose(method=Image.FLIP_LEFT_RIGHT)
+            img_buffer = img_buffer.rotate(90)
+            img_buffer.show()
             buffered = BytesIO()
-            img.save(buffered, format="JPEG")
-            img_str = base64.b64encode(buffered.getvalue())
+            img_buffer.save(buffered, format="JPEG")
+            #img_str = base64.b64encode(buffered.getvalue())
 
             logging.info("Exited the prediction method of PredictionPipeline class")
-            return img_str
+            return buffered.getvalue()
 
         except Exception as e:
             raise HDException(e, sys) from e

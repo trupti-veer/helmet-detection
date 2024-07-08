@@ -26,7 +26,7 @@ class ModelTrainer:
         self.data_transformation_artifacts = data_transformation_artifacts
         self.model_trainer_config = model_trainer_config
 
-    def train(self, model, optimizer, loader, device, epoch):
+    def train(self, model, optimizer, loader, device, epoch) -> []:
         try:
             model.to(device)
             model.train() 
@@ -50,8 +50,13 @@ class ModelTrainer:
                     print(loss_dict)
                     sys.exit(1)
                 
+                 # Zero your gradients for every batch!
                 optimizer.zero_grad()
+
+                 # Compute the loss and its gradients
                 losses.backward()
+
+                 # Adjust learning weights
                 optimizer.step()
                 
             all_losses_dict = pd.DataFrame(all_losses_dict)  # for printing
@@ -64,6 +69,7 @@ class ModelTrainer:
                 all_losses_dict['loss_objectness'].mean()
             ))
 
+            return all_losses_dict
         except Exception as e:
             raise HDException(e, sys) from e
         
@@ -109,7 +115,7 @@ class ModelTrainer:
                                       )
 
             logging.info("Loaded training data loader object")
-
+            
             model = models.detection.fasterrcnn_mobilenet_v3_large_fpn(pretrained=True)
 
             logging.info("Loaded faster Rcnn  model")
@@ -122,9 +128,10 @@ class ModelTrainer:
 
             logging.info("loaded optimiser")
 
-            for epoch in range(self.model_trainer_config.EPOCH): 
-                if __name__ == '__main__':
-                    self.train(model, optimiser, train_loader, self.model_trainer_config.DEVICE, epoch)
+            for epoch in range(self.model_trainer_config.EPOCH):                                 
+                dict = self.train(model, optimiser, train_loader, self.model_trainer_config.DEVICE, epoch)
+                print(f"dict {dict} epoch {epoch}")
+                logging.info(f"Dictioenary losses {dict} for epoch {epoch}")
                
             os.makedirs(self.model_trainer_config.TRAINED_MODEL_DIR, exist_ok=True)
             torch.save(model, self.model_trainer_config.TRAINED_MODEL_PATH)

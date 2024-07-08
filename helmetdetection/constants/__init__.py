@@ -40,7 +40,7 @@ TRAINED_MODEL_NAME = 'model.pt'
 TRAINED_BATCH_SIZE = 2
 TRAINED_SHUFFLE = False
 TRAINED_NUM_WORKERS = 1
-EPOCH = 10
+EPOCH = 20
 
 #Commom constants
 use_cuda = torch.cuda.is_available()
@@ -54,7 +54,7 @@ APP_HOST = "127.0.0.1"
 APP_PORT = 8080
 
 # Prediction Constants
-PREDICTION_CLASSES = ['With Helmet', 'Without Helmet']
+PREDICTION_CLASSES = ['Without Helmet', 'With Helmet']
 
 
 # AWS CONSTANTS

@@ -5,11 +5,9 @@ from fastapi.responses import Response, JSONResponse
 from helmetdetection.constants import APP_HOST, APP_PORT
 from helmetdetection.pipeline.train_pipeline import TrainPipeline
 from helmetdetection.pipeline.prediction_pipeline import PredictionPipeline
+import io, base64
+from PIL import Image
 
-#train_pipeline = TrainPipeline()
-#train_pipeline.run_pipeline()
-
-#print("Success")
 
 app = FastAPI()
 
@@ -22,10 +20,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
 
 @app.get("/train")
 async def training():
@@ -45,9 +39,7 @@ async def prediction(image_file: bytes = File(description="A file read as bytes"
     try:
         prediction_pipeline = PredictionPipeline()
         final_output = prediction_pipeline.run_pipeline(image_file)
-        # \print(final_output)
-        # return JSONResponse(content= final_output, status_code=200)
-        return final_output
+        return Response(content=final_output, media_type="image/png")
     except Exception as e:
         return JSONResponse(content=f"Error Occurred! {e}", status_code=500)
 

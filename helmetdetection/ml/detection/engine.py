@@ -62,7 +62,7 @@ def train_one_epoch(model, optimizer, data_loader, device, epoch, print_freq, sc
 
         return metric_logger
     except Exception as e:
-        raise HelmetException(e, sys) from e
+        raise HDException(e, sys) from e
 
 
 def _get_iou_types(model):
@@ -77,7 +77,7 @@ def _get_iou_types(model):
             iou_types.append("keypoints")
         return iou_types
     except Exception as e:
-        raise HelmetException(e, sys) from e
+        raise HDException(e, sys) from e
 
 
 @torch.inference_mode()
@@ -123,4 +123,4 @@ def evaluate(model, data_loader, device):
         torch.set_num_threads(n_threads)
         return coco_evaluator
     except Exception as e:
-        raise HelmetException(e, sys) from e
+        raise HDException(e, sys) from e
