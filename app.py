@@ -5,6 +5,7 @@ from fastapi.responses import Response, JSONResponse
 from helmetdetection.constants import APP_HOST, APP_PORT
 from helmetdetection.pipeline.train_pipeline import TrainPipeline
 from helmetdetection.pipeline.prediction_pipeline import PredictionPipeline
+from helmetdetection.exception import HDException
 import io, base64
 from PIL import Image
 
@@ -25,12 +26,9 @@ app.add_middleware(
 async def training():
     try:
         train_pipeline = TrainPipeline()
-
         train_pipeline.run_pipeline()
-
         return Response("Training successful !!")
-
-    except Exception as e:
+    except HDException as e:
         return Response(f"Error Occurred! {e}")
 
 
@@ -40,7 +38,7 @@ async def prediction(image_file: bytes = File(description="A file read as bytes"
         prediction_pipeline = PredictionPipeline()
         final_output = prediction_pipeline.run_pipeline(image_file)
         return Response(content=final_output, media_type="image/png")
-    except Exception as e:
+    except HDException as e:
         return JSONResponse(content=f"Error Occurred! {e}", status_code=500)
 
 if __name__ == "__main__":

@@ -1,0 +1,12 @@
+artifacts
+assets
+README.md
+data
+logs
+env
+venv
+logs
+infrastructure
+helmetdetection.egg-info
+LICENSE
+scripts
