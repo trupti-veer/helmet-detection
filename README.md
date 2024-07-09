@@ -8,6 +8,8 @@ This project contains an end to end ML project lifecycle as described below.
 3. Model training: Used Pretrained Faster-R-CNN MobilenetV3 Model. Changed the output layers as per need of only 2 classes as this model was trained for 90 classes.
 4. The trained best model is then uploaded to S3 bucket and it will be used while prediction of outputs.
 5. A simple REST endpoint is created using FastAPI to train and predict.
+6. End to end deployment pipeline setup using github actions.
+
 
 Trained model gives prediction with more than 90% accuracy. Below is the screenshot for prediction.
 
